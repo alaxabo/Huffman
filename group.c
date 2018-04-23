@@ -2,7 +2,7 @@
 #include "group.h"
 #include "definition.h"
 
-const float GROUP0 = 0.0;
+const float GROUP0[1] = {0.0};
 const float GROUP1[1] = {0.1};
 const float GROUP2[2] = {0.2,0.3};
 const float GROUP3[4] = {0.4,0.5,0.6,0.7};
@@ -19,10 +19,9 @@ const float GROUP7[64] =  {
                     11.0,11.1,11.2,11.3,11.4,11.5,11.6,11.7,11.8,11.9,
                     12.0,12.1,12.2,12.3,12.4,12.5,12.6,12.7
                     };
+const float *GROUPS[] = {GROUP0, GROUP1, GROUP2, GROUP3, GROUP4, GROUP5, GROUP6, GROUP7};
 
-float *GROUPS[] = {GROUP0, GROUP1, GROUP2, GROUP3, GROUP4, GROUP5, GROUP6, GROUP7};
-
-int check(float diff, float * group, int size){
+int check(float diff, const float group[], int size){
   for(int i = 0; i < size; i++){
     if(diff == group[i]) return i;
   }
@@ -36,54 +35,64 @@ float absFloat(float diff){
     return -diff;
 }
 
-void fromDiffToGroup(float diff) {
+Group fromDiffToGroup(float diff) {
     Group g;
+
     float Diff = absFloat(diff);
 
     if(Diff == 0.0){
         g.number = GROUP_0;
+        g.size = 1;
     }
     if(Diff == (float)0.1){
         g.number = GROUP_1;
+        g.size = 1;
     }
     if(check(Diff, GROUP2, 2) != -1){
         g.number = GROUP_2;
+        g.size = 2;
     }
     if(check(Diff, GROUP3, 4) != -1){
         g.number = GROUP_3;
+        g.size = 4;
     }
     if(check(Diff, GROUP4, 8) != -1){
         g.number = GROUP_4;
+        g.size = 8;
     }
     if(check(Diff, GROUP5, 16) != -1){
         g.number = GROUP_5;
+        g.size = 16;
     }
     if(check(Diff, GROUP6, 32) != -1){
         g.number = GROUP_6;
+        g.size = 32;
     }
     if(check(Diff, GROUP7, 64) != -1){
         g.number = GROUP_7;
+        g.size = 64;
     }
 
-    g->difference = GROUPS[g.number];
+    g.difference = GROUPS[g.number];
+    return g;
 }
 
 float getDataByIndex(int index, Group g){
-    if(index >= g->difference.size()){
-        return g->difference[index - g.difference.size()];
+    if(index <= g.size){
+        return -g.difference[index];
     }
     else{
-        return -g->difference[g.difference.size() - index - 1];
+        return g.difference[index - g.size -1];
     }
 }
 
 int main(){
-   Group *g = new Group();
-   g->fromDiffToGroup(1.8);
-   printf("Group number %d", g->number);
+   Group g;
+   g = fromDiffToGroup(1.8);
+   printf("Group number %d\n", g.number);
    //cout << g->number << endl;
-   int index = 11;
-   float data = g->getDataByIndex(index,*g);
-   printf("Data %f", data);
+   int index = 18;
+   float data = getDataByIndex(index,g);
+   printf("Data %f \n", data);
    //cout << data << endl;
 }

@@ -1,4 +1,5 @@
 typedef struct group {
-  float * difference;
+  const float *difference;
   int number;
+  int size;
 } Group;
