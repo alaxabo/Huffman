@@ -35,6 +35,8 @@ float absFloat(float diff){
 
 Group * fromDiffToGroup(float diff) {
     Group * g;
+    g = (Group *) malloc(sizeof(Group));
+
 
     float Diff = absFloat(diff);
 
@@ -75,22 +77,22 @@ Group * fromDiffToGroup(float diff) {
     return g;
 }
 
-float getDataByIndex(int index, Group g){
-    if(index <= g.size){
-        return -g.difference[index];
+float getDataByIndex(int index, Group * g){
+    if(index <= g->size){
+        return -g->difference[index];
     }
     else{
-        return g.difference[index - g.size -1];
+        return g->difference[index - g->size -1];
     }
 }
 
 int main(){
-   Group g;
+   Group * g;
    g = fromDiffToGroup(1.8);
-   printf("Group number %d\n", g.number);
+   printf("Group number %d\n", g->number);
    //cout << g->number << endl;
    int index = 18;
-   float data = getDataByIndex(index,g);
+   float data = getDataByIndex(index, g);
    printf("Data %f \n", data);
    //cout << data << endl;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "definition.h"
 
 typedef struct group {
@@ -8,4 +9,4 @@ typedef struct group {
 } Group;
 
 Group * fromDiffToGroup(float diff);
-float getDataByIndex(int index, Group g);
+float getDataByIndex(int index, Group *g);
