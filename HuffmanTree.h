@@ -8,7 +8,7 @@
 #ifndef HUFFMANTREE_H_
 #define HUFFMANTREE_H_
 
-#include "TreeNode.h"
+#include "treeNode.h"
 #include <string.h>
 #include <tgmath.h>
 #include <stdio.h>
@@ -32,9 +32,9 @@ void addNode(TreeNode *tree, float diff);
 int reBalance_Step(TreeNode *tree);
 void reBalance(TreeNode *tree);
 void printTree(TreeNode *tree);
-float* createDiffArr(std::vector<float> currentData, float previousData);
-string encoder(std::vector<float> Data, TreeNode *root, float previousData);
-std::vector<float> decoder(string code, TreeNode *root, float preData);
+float* createDiffArr(float *currentData, float previousData);
+char * encoder(float *Data, TreeNode *root, float previousData);
+float * decoder(char * code, TreeNode *root, float preData);
 
 
 #endif /* HUFFMANTREE_H_ */

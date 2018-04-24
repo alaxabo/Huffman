@@ -10,7 +10,7 @@
 
 TreeNode * search(TreeNode *tree, TreeNode *node) {
     if (tree != NULL) {
-        if (tree->group.group == node->group.group) {
+        if (tree->group->number == node->group->number) {
             //cout << "Node " << node->group.group << " founded." << endl;
             return tree;
         } else {
@@ -51,11 +51,13 @@ TreeNode * search_nyt(TreeNode *tree) {
 
 void buildCode(TreeNode *tree) {
     if (tree->l_child != NULL) {
-        tree->l_child->huffmanCode = tree->huffmanCode + '0';
+        //tree->l_child->huffmanCode = tree->huffmanCode + '0';
+        strcpy(tree->l_child->huffmanCode, strcat(tree->huffmanCode, '0'));
         buildCode(tree->l_child);
     }
     if (tree->r_child != NULL) {
-        tree->r_child->huffmanCode = tree->huffmanCode + '1';
+        //tree->r_child->huffmanCode = tree->huffmanCode + '1';
+        strcpy(tree->r_child->huffmanCode, strcat(tree->huffmanCode, '1'));
         buildCode(tree->r_child);
     }
 }
@@ -64,7 +66,7 @@ void printCode(TreeNode *tree) {
     if (tree->l_child == NULL && tree->r_child == NULL)
         // cout << tree->group.group << " " << tree->weight << " "
         //         << tree->huffmanCode << endl;
-        printf("%d %d %c", tree->group.group, tree->weight, tree->huffmanCode);
+        printf("%d %d %c", tree->group->number, tree->weight, tree->huffmanCode);
     if (tree->l_child != NULL)
         printCode(tree->l_child);
     if (tree->r_child != NULL)
@@ -100,9 +102,9 @@ char * ConvertToBinary(int n) {
 char * suffixCode(float diff) {
     char * suffixCode;
     Group *g;
-    fromDiffToGroup(g, diff);
+    g = fromDiffToGroup(diff);
     int index;
-    for (int i = 0; i < sizeof(g->difference); i++) {
+    for (int i = 0; i < g->size; i++) {
         if (absFloat(diff) == g->difference[i]) {
             index = i;
             //cout << index << endl;
@@ -111,18 +113,21 @@ char * suffixCode(float diff) {
     }
     if (diff < 0) {
         //cout << g->difference.size() - index - 1 << endl;
-        suffixCode = ConvertToBinary(g->difference.size() - index - 1);
+        suffixCode = ConvertToBinary(g->size - index - 1);
     }
     if (diff >= 0) {
         //cout << g->difference.size() + index << endl;
-        suffixCode = ConvertToBinary(g->difference.size() + index);
+        suffixCode = ConvertToBinary(g->size + index);
     }
     char * zero = "0000000000000000000000";
-    strcat (zero, suffixCode);
+    char tmp;
+    strcat(tmp, zero);
+    strcat(tmp, suffixCode);
+    strcpy(suffixCode, tmp);
     //suffixCode = zero + suffixCode;
     suffixCode = suffixCode.substr(
-            suffixCode.size() - log2(g->difference.size()) - 1,
-            suffixCode.size());
+            strlen(suffixCode) - log2(g->size - 1,
+            strlen(suffixCode)) );
     return suffixCode;
 }
 
@@ -152,7 +157,7 @@ char * ConvertToBCD(float diff) {
     }
    // BCDcode = zero + BCDcode;
     strcat (zero, BCDcode);
-    BCDcode = BCDcode.substr(BCDcode.size() - 16, 16);
+    BCDcode = BCDcode.substr(strlen(BCDcode) - 16, 16);
     if(diff < 0){
         BCDcode[0] = '1';
     }
@@ -257,78 +262,79 @@ float * createDiffArr(float * currentData, float previousData) {
     return diffArr;
 }
 
-string HuffmanTree::encoder(std::vector<float> Data, TreeNode *root, float previousData) {
+char * encoder(float * Data, TreeNode *root, float previousData) {
     float *diff;
-    HuffmanTree *tree = new HuffmanTree();
-    diff = tree->createDiffArr(Data, previousData);
+    diff = createDiffArr(Data, previousData);
     for(int i = 0; i < Data.size(); i++){
-        cout << diff[i] << " " ;
+       // cout << diff[i] << " " ;
+        printf("%d ", diff[i]);
     }
-    cout << endl;
-    string code;
-    for (int i = 0; i < Data.size(); i++) {
-        TreeNode *temp = new TreeNode();
-        temp->createNRM_TreeNode(diff[i]);
-        temp = tree->search(root, temp);
+    //cout << endl;
+    char * code;
+    for (int i = 0; i < sizeof(Data) i++) {
+        TreeNode *temp;
+        temp = createNRM_TreeNode(diff[i]);
+        temp = search(root, temp);
         if (temp == NULL) {
-            std::string prefixCode = tree->traverse(root, diff[i]);
-            std::string suffixCode = tree->ConvertToBCD(diff[i]);
+            char * prefixCode = traverse(root, diff[i]);
+            char * suffixCode = tree->ConvertToBCD(diff[i]);
             code = code + prefixCode + suffixCode;
-            tree->addNode(root, diff[i]);
-            tree->reBalance(root);
+            addNode(root, diff[i]);
+            reBalance(root);
         } else {
-            std::string prefixCode = tree->traverse(root, diff[i]);
-            std::string suffixCode = tree->suffixCode(diff[i]);
+            char * prefixCode = traverse(root, diff[i]);
+            char * suffixCode = suffixCode(diff[i]);
             code = code + prefixCode + suffixCode;
             temp->weight += 1;
-            tree->reBalance(root);
+            reBalance(root);
         }
     }
     return code;
 }
 
-std::vector<float> HuffmanTree::decoder(string code, TreeNode *root, float preData) {
-    std::vector<float> data;
-    HuffmanTree *tree = new HuffmanTree();
+float * decoder(char * code, TreeNode *root, float preData) {
+    float * data;
     TreeNode *currNode = root;
     float previousData = preData;
     int count = 0;
-    while (count < code.size()) {
+    while (count < strlen(code)) {
         char c;
 
-        std::string prefixCode;
+        char * prefixCode;
         if (currNode->l_child == NULL && currNode->r_child == NULL) {
             prefixCode = currNode->huffmanCode;
             if (currNode->flag == NRM_NODE) {
-                std::string suffixCode;
-                for (int i = count ; i < count + log2((double) currNode->group.difference.size()) + 1 ; i++) {
+                char * suffixCode;
+                for (int i = count ; i < count + log2((double) currNode->group->size) + 1 ; i++) {
                     c = code[i];
                     suffixCode = suffixCode + c;
                 }
 
-                cout << prefixCode << "+" << suffixCode << endl;
-                int index = tree->ConvertToDecima(suffixCode);
-                float diff = currNode->group.getDataByIndex(index, currNode->group);
+                //cout << prefixCode << "+" << suffixCode << endl;
+                printf("%c + %c\n", prefixCode, suffixCode);
+                int index = ConvertToDecima(suffixCode);
+                float diff = getDataByIndex(index, currNode->group);
                 float curdata = (float) round((diff + previousData) * 10) / 10;
                 data.push_back(curdata);
                 count = count + log2((double) currNode->group.difference.size()) + 1;
                 previousData = diff + previousData;
                 currNode->weight += 1;
-                tree->reBalance(root);
+                reBalance(root);
             } else if (currNode->flag == NYT_NODE) {
-                std::string suffixCode;
+                char * suffixCode;
                 for (int i = count; i < count + 16; i++) {
                     c = code[i];
                     suffixCode = suffixCode + c;
                 }
-                cout << prefixCode << "+" << suffixCode << endl;
-                float diff = tree->BCDtoDecima(suffixCode);
+                //cout << prefixCode << "+" << suffixCode << endl;
+                printf("%c + %c\n", prefixCode, suffixCode);
+                float diff = BCDtoDecima(suffixCode);
                 float curdata = (float) round((diff + previousData) * 10) / 10;
                 data.push_back(curdata);
                 count = count + 16;
                 previousData = diff + previousData;
-                tree->addNode(root, diff);
-                tree->reBalance(root);
+                addNode(root, diff);
+                reBalance(root);
             }
             currNode = root;
         } else {
