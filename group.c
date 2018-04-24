@@ -86,7 +86,7 @@ float getDataByIndex(int index, Group * g){
     }
 }
 
-int main(){
+/*int main(){
    Group * g;
    g = fromDiffToGroup(1.8);
    printf("Group number %d\n", g->number);
@@ -95,4 +95,4 @@ int main(){
    float data = getDataByIndex(index, g);
    printf("Data %f \n", data);
    //cout << data << endl;
-}
+}*/

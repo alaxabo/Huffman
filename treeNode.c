@@ -20,6 +20,6 @@ void createNRM_TreeNode(TreeNode * node, float diff){
 int main(){
    TreeNode *node = malloc(sizeof(TreeNode));
    createNRM_TreeNode(node, 0.3);
-   printf("Node %d", node->group->number);
+   printf("Node %d\n", node->group->number);
    //cout << "Node " << n->group.group << endl;
 }
