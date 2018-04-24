@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include "group.h"
-#include "definition.h"
 
 const float GROUP0[1] = {0.0};
 const float GROUP1[1] = {0.1};
@@ -35,45 +33,45 @@ float absFloat(float diff){
     return -diff;
 }
 
-Group fromDiffToGroup(float diff) {
-    Group g;
+Group * fromDiffToGroup(float diff) {
+    Group * g;
 
     float Diff = absFloat(diff);
 
     if(Diff == 0.0){
-        g.number = GROUP_0;
-        g.size = 1;
+        g->number = GROUP_0;
+        g->size = 1;
     }
     if(Diff == (float)0.1){
-        g.number = GROUP_1;
-        g.size = 1;
+        g->number = GROUP_1;
+        g->size = 1;
     }
     if(check(Diff, GROUP2, 2) != -1){
-        g.number = GROUP_2;
-        g.size = 2;
+        g->number = GROUP_2;
+        g->size = 2;
     }
     if(check(Diff, GROUP3, 4) != -1){
-        g.number = GROUP_3;
-        g.size = 4;
+        g->number = GROUP_3;
+        g->size = 4;
     }
     if(check(Diff, GROUP4, 8) != -1){
-        g.number = GROUP_4;
-        g.size = 8;
+        g->number = GROUP_4;
+        g->size = 8;
     }
     if(check(Diff, GROUP5, 16) != -1){
-        g.number = GROUP_5;
-        g.size = 16;
+        g->number = GROUP_5;
+        g->size = 16;
     }
     if(check(Diff, GROUP6, 32) != -1){
-        g.number = GROUP_6;
-        g.size = 32;
+        g->number = GROUP_6;
+        g->size = 32;
     }
     if(check(Diff, GROUP7, 64) != -1){
-        g.number = GROUP_7;
-        g.size = 64;
+        g->number = GROUP_7;
+        g->size = 64;
     }
 
-    g.difference = GROUPS[g.number];
+    g->difference = GROUPS[g->number];
     return g;
 }
 
