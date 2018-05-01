@@ -14,15 +14,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 
-    
+
 void initialize(TreeNode *tree);
 TreeNode* search(TreeNode *tree,TreeNode *node);
 TreeNode* search_nyt(TreeNode *tree);
 void buildCode(TreeNode *tree);
 void printCode(TreeNode *tree);
-char * ConvertToBinary(int n);
+char * ConvertToBinary(int n, int length);
 int ConvertToDecima(char * BinaryCode);
 char * ConvertToBCD(float diff);
 float BCDtoDecima(char * BCDcode);
@@ -32,8 +33,8 @@ void addNode(TreeNode *tree, float diff);
 int reBalance_Step(TreeNode *tree);
 void reBalance(TreeNode *tree);
 void printTree(TreeNode *tree);
-float* createDiffArr(float *currentData, float previousData);
-char * encoder(float *Data, TreeNode *root, float previousData);
+//float* createDiffArr(float *currentData, float previousData);
+char * encoder(float *Data, TreeNode *root);
 float * decoder(char * code, TreeNode *root, float preData);
 
 

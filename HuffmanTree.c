@@ -7,17 +7,22 @@
 #include <stdio.h>
 #include "HuffmanTree.h"
 
+TreeNode * createEmptyTree(){
+    TreeNode * root = createNYT_TreeNode();
 
-TreeNode * search(TreeNode *tree, TreeNode *node) {
-    if (tree != NULL) {
-        if (tree->group->number == node->group->number) {
+    return root;
+}
+
+TreeNode * search(TreeNode *root, TreeNode *node) {
+    if (root != NULL) {
+        if (root->group->number == node->group->number) {
             //cout << "Node " << node->group.group << " founded." << endl;
-            return tree;
+            return root;
         } else {
-            TreeNode *left = search(tree->l_child, node);
+            TreeNode *left = search(root->l_child, node);
             if (left != NULL)
                 return left;
-            TreeNode *right = search(tree->r_child, node);
+            TreeNode *right = search(root->r_child, node);
             if (right != NULL)
                 return right;
         }
@@ -29,16 +34,16 @@ TreeNode * search(TreeNode *tree, TreeNode *node) {
 
 }
 
-TreeNode * search_nyt(TreeNode *tree) {
-    if (tree != NULL) {
-        if (tree->flag == NYT_NODE) {
+TreeNode * search_nyt(TreeNode *root) {
+    if (root != NULL) {
+        if (root->flag == NYT_NODE) {
             //cout << "NYT node founded." << endl;
-            return tree;
+            return root;
         } else {
-            TreeNode *left = search_nyt(tree->l_child);
+            TreeNode *left = search_nyt(root->l_child);
             if (left != NULL)
                 return left;
-            TreeNode *right = search_nyt(tree->r_child);
+            TreeNode *right = search_nyt(root->r_child);
             if (right != NULL)
                 return right;
         }
@@ -49,205 +54,216 @@ TreeNode * search_nyt(TreeNode *tree) {
 
 }
 
-void buildCode(TreeNode *tree) {
-    if (tree->l_child != NULL) {
+void buildCode(TreeNode *root) {
+    if (root->l_child != NULL) {
         //tree->l_child->huffmanCode = tree->huffmanCode + '0';
-        strcpy(tree->l_child->huffmanCode, strcat(tree->huffmanCode, '0'));
-        buildCode(tree->l_child);
+        strcpy(root->l_child->huffmanCode, strcat(root->huffmanCode, "0"));
+        buildCode(root->l_child);
     }
-    if (tree->r_child != NULL) {
+    if (root->r_child != NULL) {
         //tree->r_child->huffmanCode = tree->huffmanCode + '1';
-        strcpy(tree->r_child->huffmanCode, strcat(tree->huffmanCode, '1'));
-        buildCode(tree->r_child);
+        strcpy(root->r_child->huffmanCode, strcat(root->huffmanCode, "1"));
+        buildCode(root->r_child);
     }
 }
 
-void printCode(TreeNode *tree) {
-    if (tree->l_child == NULL && tree->r_child == NULL)
-        // cout << tree->group.group << " " << tree->weight << " "
-        //         << tree->huffmanCode << endl;
-        printf("%d %d %c", tree->group->number, tree->weight, tree->huffmanCode);
-    if (tree->l_child != NULL)
-        printCode(tree->l_child);
-    if (tree->r_child != NULL)
-        printCode(tree->r_child);
+void printCode(TreeNode *root) {
+    if (root->l_child == NULL && root->r_child == NULL)
+        printf("%d %d %s", root->group->number, root->weight, root->huffmanCode);
+    if (root->l_child != NULL)
+        printCode(root->l_child);
+    if (root->r_child != NULL)
+        printCode(root->r_child);
 }
-char * traverse(TreeNode *tree, float diff) {
-    char * prefixCode;
-    TreeNode *n;
-    TreeNode *tmp;
-    createNRM_TreeNode(tmp, diff);
-    n = search(tree, tmp);
-    if (n != NULL) {
-        prefixCode = n->huffmanCode;
-    } else if (n == NULL) {
-        n = search_nyt(tree);
-        prefixCode = n->huffmanCode;
+
+char * traverse(TreeNode *root, float diff) {
+    char *prefixCode;
+    TreeNode *node;
+
+    node = search(root, createNRM_TreeNode(diff));
+
+    if (node == NULL) {
+        node = search_nyt(root);
     }
+
+    prefixCode = malloc(sizeof(node->huffmanCode));
+    strcpy(prefixCode, node->huffmanCode);
+
     return prefixCode;
 }
 
-char * ConvertToBinary(int n) {
-    char * r;
-    if (n == 0) {
-        return "0";
-    }
+char * ConvertToBinary(int n, int length) {
+  char * binaryString = malloc(1), *tmp;
+  int size = 0, i, preSize;
+
+  if (n == 0) {
+    strcpy(binaryString, "0");
+  } else {
     while (n != 0) {
-        r = (n % 2 == 0 ? "0" : "1") + r;
-        n /= 2;
+      tmp = strdup(binaryString);
+      binaryString = realloc(binaryString, ++size);
+
+      strcpy(binaryString, (n % 2 == 0 ? "0" : "1"));
+      strcat(binaryString, tmp);
+
+      n /= 2;
+      free(tmp);
     }
-    return r;
+  }
+
+  preSize = length - size;
+
+  if (preSize > 0){
+    tmp = binaryString;
+    binaryString = malloc(length);
+
+    for (i = 0; i < preSize; i++){
+      strcat(binaryString, "0");
+    }
+
+    strcat(binaryString, tmp);
+    free(tmp);
+  }
+
+  return binaryString;
 }
 
 char * suffixCode(float diff) {
     char * suffixCode;
-    Group *g;
-    g = fromDiffToGroup(diff);
     int index;
+    Group *g = fromDiffToGroup(diff);
+    int codeLength = (int) log2(g->size);
+
     for (int i = 0; i < g->size; i++) {
         if (absFloat(diff) == g->difference[i]) {
             index = i;
+            break;
             //cout << index << endl;
         }
-
     }
     if (diff < 0) {
         //cout << g->difference.size() - index - 1 << endl;
-        suffixCode = ConvertToBinary(g->size - index - 1);
+        suffixCode = ConvertToBinary(g->size - index - 1, codeLength);
     }
     if (diff >= 0) {
         //cout << g->difference.size() + index << endl;
-        suffixCode = ConvertToBinary(g->size + index);
+        suffixCode = ConvertToBinary(g->size + index, codeLength);
     }
-    char * zero = "0000000000000000000000";
-    char tmp;
-    strcat(tmp, zero);
-    strcat(tmp, suffixCode);
-    strcpy(suffixCode, tmp);
-    //suffixCode = zero + suffixCode;
-    suffixCode = suffixCode.substr(
-            strlen(suffixCode) - log2(g->size - 1,
-            strlen(suffixCode)) );
+
     return suffixCode;
 }
 
-int ConvertToDecima(char * BinaryCode){
-    long i = strtol(BinaryCode.c_str(), NULL ,2);
-    return (int)i;
+int ConvertToDecima(char * binaryCode){
+    int i, codeLength = strlen(binaryCode);
+    char codeChar;
+    int codeNumber, decima = 0;
+
+    for (i = 0; i < codeLength; i++){
+        codeChar = binaryCode[codeLength - i - 1];
+        codeNumber = codeChar - '0';
+
+        if(codeNumber){
+            decima += 1 << i;
+        }
+    }
+
+    return decima;
 }
 
 char * ConvertToBCD(float diff) {
-    float f = diff * 10;
-    int n = (int) f;
-    //cout << n << endl;
-    char * BCDcode;
-    char * symbol;
-    char * zero = "0000000000000000";
-    if (n == 0) {
-        BCDcode = "0";
-    }
-    while (n != 0) {
-        //symbol = zero + ConvertToBinary(n % 10);
-        strcat (zero, ConvertToBinary(n % 10));
-//        cout << n % 10 << endl;
-        symbol = symbol.substr(symbol.size() - 4, 4);
-//        cout << symbol << endl;
-        BCDcode = symbol + BCDcode;
-        n = n / 10;
-    }
-   // BCDcode = zero + BCDcode;
-    strcat (zero, BCDcode);
-    BCDcode = BCDcode.substr(strlen(BCDcode) - 16, 16);
+    int n = (int) diff * 10;
+
+    char *BCDcode = ConvertToBinary(n, 16);
+
     if(diff < 0){
         BCDcode[0] = '1';
     }
-    return BCDcode;
 
+    return BCDcode;
 }
 
 float BCDtoDecima(char * BCDcode){
-    int index = strlen(BCDcode);
-    int n = 0;
-    int count = 0;
+    int n;
+    float res;
     char first = BCDcode[0];
+
     if(first == '1'){
         BCDcode[0] = '0';
     }
-    while(count < strlen(BCDcode)/4){
-        char * symbol;
-        int temp;
-        symbol = BCDcode.substr(index - 4*(count+1), 4);
-        temp = ConvertToDecima(symbol);
-        n += temp * pow(10, count);
-        count++;
-    }
-    float res = (float)n/10;
+
+    n = ConvertToDecima(BCDcode);
+    res = (float)n/10;
+
     if(first == '1')
         return -res;
     else
         return res;
 }
 
-void addNode(TreeNode *tree, float diff) {
-    TreeNode* nyt;
-    TreeNode* nrm;
-    TreeNode* temp = search_nyt(tree);
-    createNYT_TreeNode(nyt);
+void addNode(TreeNode *root, float diff) {
+    TreeNode* nyt = createNYT_TreeNode();
+    TreeNode* nrm = createNRM_TreeNode(diff);
+    TreeNode* temp = search_nyt(root);
+
     temp->l_child = nyt;
     temp->flag = COMP_NODE;
     temp->weight = -1;
     //temp->group.group = -2;
-    createNRM_TreeNode(nrm, diff);
     temp->r_child = nrm;
     //cout << "New node " << temp->r_child->group.group << endl;
 
 }
 
-int reBalance_Step(TreeNode *tree) {
-    //cout << "Rebalance" << endl;
-    int count = 0;
-    if (tree->l_child->r_child != NULL && tree->r_child != NULL
-            && tree->l_child != NULL) {
-        //cout << tree->r_child->weight << endl;
-        //cout << tree->l_child->r_child->weight << endl;
-        if (tree->r_child->weight < tree->l_child->r_child->weight) {
-            //cout << tree->l_child->r_child->weight << endl;
-            TreeNode *temp;
-            temp = tree->r_child;
-            tree->r_child = tree->l_child->r_child;
-            tree->l_child->r_child = temp;
-            count += 1;
-            ////cout << "error founded." << endl;
+int reBalance_Step(TreeNode *root) {
+    TreeNode *upper_node = NULL, *lower_node = NULL;
+    int upper_weight, lower_weight;
+
+    if(root->r_child){
+        upper_node = root->r_child;
+        upper_weight = upper_node->weight;
+    }
+
+    if(root->l_child && root->l_child->r_child){
+        lower_node = root->l_child;
+        lower_weight = lower_node->weight;
+    }
+
+    if(upper_node && lower_node){
+        if(lower_weight > upper_weight){
+            root->r_child = lower_node;
+            root->l_child->r_child = upper_node;
         }
 
-        reBalance_Step(tree->l_child);
-    }
-    return count;
+        reBalance_Step(root->l_child);
 
+        return 1;
+    }
+
+    return 0;
 }
 
-void reBalance(TreeNode *tree) {
+void reBalance(TreeNode *root) {
     int count;
-    count = reBalance_Step(tree);
+    count = reBalance_Step(root);
     while (count != 0) {
-        count = reBalance_Step(tree);
+        count = reBalance_Step(root);
     }
-    buildCode(tree);
+    buildCode(root);
 }
 
-void printTree(TreeNode *tree) {
+void printTree(TreeNode *root) {
     //if(tree->l_child == NULL && tree->r_child == NULL)
     // cout << tree->flag << " " << tree->group.group << " " << tree->weight
     //         << endl;
-    printf("%d %d %d \n", tree->flag, tree0>group.group, tree->weight);
-    if (tree->l_child != NULL)
-        printTree(tree->l_child);
-    if (tree->r_child != NULL)
-        printTree(tree->r_child);
+    printf("%d %d %d \n", root->flag, root->group->number, root->weight);
+    if (root->l_child != NULL)
+        printTree(root->l_child);
+    if (root->r_child != NULL)
+        printTree(root->r_child);
 
 }
 
-float * createDiffArr(float * currentData, float previousData) {
+/*float * createDiffArr(float * currentData, float previousData) {
     float *diffArr;
     diffArr = (float *) malloc(currentData.size() * sizeof(float *));
     for (int i = 0; i < currentData.size(); i++) {
@@ -260,39 +276,46 @@ float * createDiffArr(float * currentData, float previousData) {
         }
     }
     return diffArr;
-}
+}*/
 
-char * encoder(float * Data, TreeNode *root, float previousData) {
-    float *diff;
-    diff = createDiffArr(Data, previousData);
-    for(int i = 0; i < Data.size(); i++){
+char * encoder(float * data, TreeNode *root) {
+    int length = sizeof(data) / sizeof(float);
+    char *preCode, *sufCode, *code;
+    TreeNode *temp;
+
+    for(int i = 0; i < length; i++){
        // cout << diff[i] << " " ;
-        printf("%d ", diff[i]);
+        printf("%f ", data[i]);
     }
     //cout << endl;
-    char * code;
-    for (int i = 0; i < sizeof(Data) i++) {
-        TreeNode *temp;
-        temp = createNRM_TreeNode(diff[i]);
+    for (int i = 0; i < length; i++) {
+        temp = createNRM_TreeNode(data[i]);
         temp = search(root, temp);
         if (temp == NULL) {
-            char * prefixCode = traverse(root, diff[i]);
-            char * suffixCode = tree->ConvertToBCD(diff[i]);
-            code = code + prefixCode + suffixCode;
-            addNode(root, diff[i]);
+            preCode = traverse(root, data[i]);
+            sufCode = ConvertToBCD(data[i]);
+
+            addNode(root, data[i]);
             reBalance(root);
         } else {
-            char * prefixCode = traverse(root, diff[i]);
-            char * suffixCode = suffixCode(diff[i]);
-            code = code + prefixCode + suffixCode;
+            preCode = traverse(root, data[i]);
+            sufCode = suffixCode(data[i]);
+
             temp->weight += 1;
             reBalance(root);
         }
+
+        code = realloc(code, strlen(code) + strlen(preCode) + strlen(sufCode));
+        strcat(code, preCode);
+        strcat(code, sufCode);
+        free(preCode);
+        free(sufCode);
     }
+
     return code;
 }
 
-float * decoder(char * code, TreeNode *root, float preData) {
+/*float * decoder(char * code, TreeNode *root, float preData) {
     float * data;
     TreeNode *currNode = root;
     float previousData = preData;
@@ -348,4 +371,12 @@ float * decoder(char * code, TreeNode *root, float preData) {
         }
     }
     return data;
+}*/
+
+int main(){
+    TreeNode * root = createEmptyTree();
+    float data[5] = {0.1, 0.2, 0.1, 0.1, 0.2};
+
+    char * s = encoder(data, root);
+    printf("%s\n", s);
 }

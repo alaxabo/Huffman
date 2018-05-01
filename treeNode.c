@@ -1,24 +1,37 @@
 #include "treeNode.h"
 
-void createNYT_TreeNode(TreeNode * node){
+TreeNode * createNYT_TreeNode(){
+    TreeNode * node;
+
+    node = (TreeNode*)malloc(sizeof(TreeNode));
+    node->group = (Group*)malloc(sizeof(Group));
+
     node->flag = NYT_NODE;
     node->weight = 0;
     node->l_child = 0;
     node->r_child = 0;
     node->group->number = -1;
+
+    return node;
 }
 
-void createNRM_TreeNode(TreeNode * node, float diff){
+TreeNode * createNRM_TreeNode(float diff){
+    TreeNode * node;
+
+    node = malloc(sizeof(TreeNode));
+
     node->flag = NRM_NODE;
     node->weight = 1;
     node->l_child = 0;
     node->r_child = 0;
     //node->group.fromDiffToGroup(diff);
     node->group = fromDiffToGroup(diff);
+
+    return node;
 }
 
-void main(){
-    TreeNode *tree = (TreeNode *)malloc(sizeof(TreeNode));
-    createNRM_TreeNode(tree, 1.5);
-    printf("%d\n", tree->group->number);
-}
+/*void main(){
+    TreeNode *node;
+    node = createNRM_TreeNode(tree, 1.5);
+    printf("%d\n", node->group->number);
+}*/

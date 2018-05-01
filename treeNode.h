@@ -14,5 +14,5 @@ typedef struct TreeNode {
   char *huffmanCode;
 } TreeNode;
 
-void createNYT_TreeNode(TreeNode * node);
-void createNRM_TreeNode(TreeNode * node, float diff);
+TreeNode * createNYT_TreeNode();
+TreeNode * createNRM_TreeNode(float diff);
