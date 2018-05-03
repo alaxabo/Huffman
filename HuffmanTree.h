@@ -34,7 +34,7 @@ int reBalance_Step(TreeNode *tree);
 void reBalance(TreeNode *tree);
 void printTree(TreeNode *tree);
 //float* createDiffArr(float *currentData, float previousData);
-char * encoder(float *Data, TreeNode *root);
+char * encoder(float *Data, int length, TreeNode *root);
 float * decoder(char * code, TreeNode *root, float preData);
 
 

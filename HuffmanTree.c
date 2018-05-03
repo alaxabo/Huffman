@@ -9,6 +9,7 @@
 
 TreeNode * createEmptyTree(){
     TreeNode * root = createNYT_TreeNode();
+    root->huffmanCode = "";
 
     return root;
 }
@@ -55,14 +56,28 @@ TreeNode * search_nyt(TreeNode *root) {
 }
 
 void buildCode(TreeNode *root) {
-    if (root->l_child != NULL) {
-        //tree->l_child->huffmanCode = tree->huffmanCode + '0';
-        strcpy(root->l_child->huffmanCode, strcat(root->huffmanCode, "0"));
+    int length = strlen(root->huffmanCode) + 1;
+    char * code;
+
+
+    if (root->l_child) {
+        code = malloc(length);
+
+        strcpy(code, root->huffmanCode);
+        strcat(code, "0");
+
+        root->l_child->huffmanCode = code;
+
         buildCode(root->l_child);
     }
-    if (root->r_child != NULL) {
-        //tree->r_child->huffmanCode = tree->huffmanCode + '1';
-        strcpy(root->r_child->huffmanCode, strcat(root->huffmanCode, "1"));
+    if (root->r_child) {
+        code = malloc(length);
+
+        strcpy(code, root->huffmanCode);
+        strcat(code, "1");
+
+        root->r_child->huffmanCode = code;
+
         buildCode(root->r_child);
     }
 }
@@ -83,10 +98,11 @@ char * traverse(TreeNode *root, float diff) {
     node = search(root, createNRM_TreeNode(diff));
 
     if (node == NULL) {
+        //printf("node null\n");
         node = search_nyt(root);
     }
 
-    prefixCode = malloc(sizeof(node->huffmanCode));
+    prefixCode = malloc(strlen(node->huffmanCode));
     strcpy(prefixCode, node->huffmanCode);
 
     return prefixCode;
@@ -171,7 +187,7 @@ int ConvertToDecima(char * binaryCode){
 }
 
 char * ConvertToBCD(float diff) {
-    int n = (int) diff * 10;
+    int n = (int) (diff * 10);
 
     char *BCDcode = ConvertToBinary(n, 16);
 
@@ -229,14 +245,13 @@ int reBalance_Step(TreeNode *root) {
     }
 
     if(upper_node && lower_node){
+        //printf("upper node & lower node\n");
         if(lower_weight > upper_weight){
             root->r_child = lower_node;
             root->l_child->r_child = upper_node;
+            reBalance_Step(root->l_child);
+            return 1;
         }
-
-        reBalance_Step(root->l_child);
-
-        return 1;
     }
 
     return 0;
@@ -278,36 +293,44 @@ void printTree(TreeNode *root) {
     return diffArr;
 }*/
 
-char * encoder(float * data, TreeNode *root) {
-    int length = sizeof(data) / sizeof(float);
-    char *preCode, *sufCode, *code;
+char * encoder(float *data, int length, TreeNode *root) {
+    char *preCode, *sufCode, *code = malloc(0);
     TreeNode *temp;
 
-    for(int i = 0; i < length; i++){
-       // cout << diff[i] << " " ;
-        printf("%f ", data[i]);
-    }
+    // for(int i = 0; i < length; i++){
+    //    // cout << diff[i] << " " ;
+    //     printf("%f \n", data[i]);
+    // }
     //cout << endl;
     for (int i = 0; i < length; i++) {
         temp = createNRM_TreeNode(data[i]);
         temp = search(root, temp);
         if (temp == NULL) {
             preCode = traverse(root, data[i]);
+            //printf("precode: %s\n", preCode);
             sufCode = ConvertToBCD(data[i]);
+            //printf("sufCode: %s\n", sufCode);
 
             addNode(root, data[i]);
+            //printf("finnish add node\n");
             reBalance(root);
+            //printf("finnish rebalance\n");
         } else {
             preCode = traverse(root, data[i]);
+            //printf("precode: %s\n", preCode);
             sufCode = suffixCode(data[i]);
+            //printf("sufCode: %s\n", sufCode);
 
             temp->weight += 1;
             reBalance(root);
+            //printf("finnish rebalance\n");
         }
 
+        //printf("1\n");
         code = realloc(code, strlen(code) + strlen(preCode) + strlen(sufCode));
         strcat(code, preCode);
         strcat(code, sufCode);
+        //printf("%s\n", code);
         free(preCode);
         free(sufCode);
     }
@@ -377,6 +400,6 @@ int main(){
     TreeNode * root = createEmptyTree();
     float data[5] = {0.1, 0.2, 0.1, 0.1, 0.2};
 
-    char * s = encoder(data, root);
+    char * s = encoder(data, 5, root);
     printf("%s\n", s);
 }
