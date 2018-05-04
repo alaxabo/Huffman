@@ -21,19 +21,14 @@ int ConvertToDecima(char * binaryCode){
 }
 
 int main(){
-  char *s = malloc(10);
-  char *s2 = malloc(120);
+  char * s = malloc(1);
 
-  printf("%ld\n", strlen(s2));
+  s = realloc(s, 10);
+  strcpy(s, "123456789");
 
-  strcpy(s, "1234");
-  strcpy(s2, "5678");
+  s = realloc(s, 5);
+  char * s2 = malloc(6);
+  strcpy(s2, "12345");
 
-  printf("%ld\n", strlen(s2));
-
-  strcat(s, s2);
-  free(s2);
-
-  //printf("%s\n", s);
-  printf("%ld\n", strlen(s2));
+  printf("%s\n", s);
 }

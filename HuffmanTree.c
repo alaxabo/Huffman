@@ -59,7 +59,6 @@ void buildCode(TreeNode *root) {
     int length = strlen(root->huffmanCode) + 1;
     char * code;
 
-
     if (root->l_child) {
         code = malloc(length);
 
@@ -148,7 +147,7 @@ char * suffixCode(float diff) {
     char * suffixCode;
     int index;
     Group *g = fromDiffToGroup(diff);
-    int codeLength = (int) log2(g->size);
+    int codeLength = getGroupBinaryLength(g);
 
     for (int i = 0; i < g->size; i++) {
         if (absFloat(diff) == g->difference[i]) {
@@ -158,11 +157,9 @@ char * suffixCode(float diff) {
         }
     }
     if (diff < 0) {
-        //cout << g->difference.size() - index - 1 << endl;
         suffixCode = ConvertToBinary(g->size - index - 1, codeLength);
     }
     if (diff >= 0) {
-        //cout << g->difference.size() + index << endl;
         suffixCode = ConvertToBinary(g->size + index, codeLength);
     }
 
@@ -189,7 +186,7 @@ int ConvertToDecima(char * binaryCode){
 char * ConvertToBCD(float diff) {
     int n = (int) (diff * 10);
 
-    char *BCDcode = ConvertToBinary(n, 16);
+    char *BCDcode = ConvertToBinary(n, BCD_CODE_LENGTH);
 
     if(diff < 0){
         BCDcode[0] = '1';
@@ -240,7 +237,7 @@ int reBalance_Step(TreeNode *root) {
     }
 
     if(root->l_child && root->l_child->r_child){
-        lower_node = root->l_child;
+        lower_node = root->l_child->r_child;
         lower_weight = lower_node->weight;
     }
 
@@ -294,112 +291,148 @@ void printTree(TreeNode *root) {
 }*/
 
 char * encoder(float *data, int length, TreeNode *root) {
-    char *preCode, *sufCode, *code = malloc(0);
+    char *preCode, *sufCode, *code = malloc(0), *tmp;
     TreeNode *temp;
 
-    // for(int i = 0; i < length; i++){
-    //    // cout << diff[i] << " " ;
-    //     printf("%f \n", data[i]);
-    // }
-    //cout << endl;
     for (int i = 0; i < length; i++) {
         temp = createNRM_TreeNode(data[i]);
         temp = search(root, temp);
         if (temp == NULL) {
             preCode = traverse(root, data[i]);
-            //printf("precode: %s\n", preCode);
             sufCode = ConvertToBCD(data[i]);
-            //printf("sufCode: %s\n", sufCode);
 
             addNode(root, data[i]);
-            //printf("finnish add node\n");
             reBalance(root);
-            //printf("finnish rebalance\n");
         } else {
             preCode = traverse(root, data[i]);
-            //printf("precode: %s\n", preCode);
             sufCode = suffixCode(data[i]);
-            //printf("sufCode: %s\n", sufCode);
 
             temp->weight += 1;
             reBalance(root);
-            //printf("finnish rebalance\n");
         }
 
-        //printf("1\n");
-        code = realloc(code, strlen(code) + strlen(preCode) + strlen(sufCode));
+        code = realloc(code, strlen(code) + strlen(preCode) + strlen(sufCode) + 1);
+
         strcat(code, preCode);
         strcat(code, sufCode);
-        //printf("%s\n", code);
+
         free(preCode);
         free(sufCode);
     }
 
+
     return code;
 }
 
-/*float * decoder(char * code, TreeNode *root, float preData) {
-    float * data;
-    TreeNode *currNode = root;
-    float previousData = preData;
-    int count = 0;
-    while (count < strlen(code)) {
-        char c;
+float getDataFromBCDCode(char *code){
+    char *suffixCode;
+    float data;
+    int decima;
 
-        char * prefixCode;
-        if (currNode->l_child == NULL && currNode->r_child == NULL) {
-            prefixCode = currNode->huffmanCode;
-            if (currNode->flag == NRM_NODE) {
-                char * suffixCode;
-                for (int i = count ; i < count + log2((double) currNode->group->size) + 1 ; i++) {
-                    c = code[i];
-                    suffixCode = suffixCode + c;
-                }
+    suffixCode = malloc(BCD_CODE_LENGTH + 1);
+    memcpy(suffixCode, code, BCD_CODE_LENGTH);
+    suffixCode[BCD_CODE_LENGTH] = '\0';
 
-                //cout << prefixCode << "+" << suffixCode << endl;
-                printf("%c + %c\n", prefixCode, suffixCode);
-                int index = ConvertToDecima(suffixCode);
-                float diff = getDataByIndex(index, currNode->group);
-                float curdata = (float) round((diff + previousData) * 10) / 10;
-                data.push_back(curdata);
-                count = count + log2((double) currNode->group.difference.size()) + 1;
-                previousData = diff + previousData;
-                currNode->weight += 1;
-                reBalance(root);
-            } else if (currNode->flag == NYT_NODE) {
-                char * suffixCode;
-                for (int i = count; i < count + 16; i++) {
-                    c = code[i];
-                    suffixCode = suffixCode + c;
-                }
-                //cout << prefixCode << "+" << suffixCode << endl;
-                printf("%c + %c\n", prefixCode, suffixCode);
-                float diff = BCDtoDecima(suffixCode);
-                float curdata = (float) round((diff + previousData) * 10) / 10;
-                data.push_back(curdata);
-                count = count + 16;
-                previousData = diff + previousData;
-                addNode(root, diff);
-                reBalance(root);
-            }
-            currNode = root;
-        } else {
-            c = code[count];
-            if (c == '0') {
-                currNode = currNode->l_child;
-            } else if (c == '1') {
-                currNode = currNode->r_child;
-            }
-            count++;
-        }
-    }
+    decima = ConvertToDecima(suffixCode);
+    data = (float) decima / 10;
+    free(suffixCode);
+
     return data;
-}*/
+}
+
+float getDataFromCode(Group * group, char *code, int length){
+    char * suffixCode;
+    int index;
+    float data;
+
+    suffixCode = malloc(length + 1);
+    memcpy(suffixCode, code, length);
+    suffixCode[length] = '\0';
+
+    index = ConvertToDecima(suffixCode);
+
+    if(index >= group->size){
+        index -= group->size;
+    }
+
+    data = group->difference[index];
+
+    return data;
+}
+
+float * decoder(char * code, TreeNode *root) {
+    TreeNode *currentNode;
+    char *suffixCode;
+    float *dataArray = malloc(sizeof(float)), data;
+
+    int count = 0, codeLength = strlen(code), prefixCount = 0, data_count = 0;
+    int i, sufCodeLength = 0;
+
+    char currentCode = code[count];
+
+    while (count < codeLength){
+        currentCode = code[count];
+        currentNode = root;
+
+        dataArray = realloc(dataArray, (data_count + 1) * sizeof(float));
+        if(currentNode->flag == NYT_NODE){
+            data = getDataFromBCDCode(&code[count]);
+            dataArray[data_count++] = data;
+            addNode(root, data);
+            reBalance(root);
+            count += BCD_CODE_LENGTH;
+        } else if (currentNode->flag == COMP_NODE){
+            // Duyet tung ki tu 0
+            while(currentCode == '0' && currentNode->flag != NYT_NODE){
+                currentNode = currentNode->l_child;
+                count++;
+                currentCode = code[count];
+            }
+
+            if(currentNode->flag == NYT_NODE){
+                data = getDataFromBCDCode(&code[count]);
+                dataArray[data_count++] = data;
+                addNode(root, data);
+                reBalance(root);
+                count += BCD_CODE_LENGTH;
+            } else if(currentNode->flag == COMP_NODE){
+                // Doc ki tu 1
+                count++;
+                currentNode = currentNode->r_child;
+
+                sufCodeLength = getGroupBinaryLength(currentNode->group);
+                data = getDataFromCode(currentNode->group, &code[count], sufCodeLength);
+                dataArray[data_count++] = data;
+
+                count += sufCodeLength;
+                currentNode->weight++;
+                reBalance(root);
+            }
+        }
+
+    printf("group %d\n", root->r_child->group->number);
+    }
+
+
+
+    return dataArray;
+}
 
 int main(){
     TreeNode * root = createEmptyTree();
-    float data[5] = {0.1, 0.2, 0.1, 0.1, 0.2};
+    TreeNode *root2 = createEmptyTree();
 
-    char * s = encoder(data, 5, root);
+    float *f;
+    float data[5] = {0.1, 0.2, 0.2, 0.2, 0.1};
+
+    char *s = encoder(data, 5, root);
+    f = decoder(s, root2);
+
     printf("%s\n", s);
+
+    int i;
+    for (i = 0; i < 5; i++){
+        printf("%f ", f[i]);
+    }
+    printf("\n");
 }

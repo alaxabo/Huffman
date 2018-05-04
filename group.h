@@ -12,3 +12,4 @@ int check(float diff, const float group[], int size);
 float absFloat(float diff);
 Group * fromDiffToGroup(float diff);
 float getDataByIndex(int index, Group * g);
+int getGroupBinaryLength(Group * g);

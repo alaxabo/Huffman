@@ -1,5 +1,5 @@
 #include "group.h"
-
+#include <math.h>
 
 const float GROUP0[1] = {0.0};
 const float GROUP1[1] = {0.1};
@@ -85,6 +85,12 @@ float getDataByIndex(int index, Group * g){
     else{
         return g->difference[index - g->size -1];
     }
+}
+
+int getGroupBinaryLength(Group * g){
+    int length;
+    length = log2(g->size * 2);
+    return length;
 }
 
 // int main(){

@@ -8,12 +8,12 @@
 #ifndef HUFFMANTREE_H_
 #define HUFFMANTREE_H_
 
+#define BCD_CODE_LENGTH 16
+
 #include "treeNode.h"
 #include <string.h>
-#include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 
 
@@ -35,7 +35,7 @@ void reBalance(TreeNode *tree);
 void printTree(TreeNode *tree);
 //float* createDiffArr(float *currentData, float previousData);
 char * encoder(float *Data, int length, TreeNode *root);
-float * decoder(char * code, TreeNode *root, float preData);
+float * decoder(char * code, TreeNode *root);
 
 
 #endif /* HUFFMANTREE_H_ */
